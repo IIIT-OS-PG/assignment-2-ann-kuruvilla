@@ -16,13 +16,17 @@ using namespace std;
 #define queuelimit 5
 #define BLK_SIZE 10
 
-char req_client[1024];
+char req_client[1000];
+char req_clientport[200];
 
 void* service_req(void	*arg)
 {
 	int newsock=*((int *)arg);
-	recv(newsock,req_client,1024,0);
+	recv(newsock,(void*)req_client,1000,0);
 	cout<<req_client<<"\n";
+	memset(req_client,0,sizeof(req_client));
+	recv(newsock,(void*)req_clientport,200,0);
+	cout<<req_clientport<<endl;
 
 	pthread_exit(NULL);
 
