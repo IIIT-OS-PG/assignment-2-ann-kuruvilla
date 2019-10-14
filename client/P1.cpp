@@ -16,6 +16,8 @@
 
 using namespace std;
 
+unordered_map< string, vector<string> > chunklists;//----------map of filename and chunks the peer has
+
 vector<string> splitbydelimeter(string s,char deli)
 {
 	int i;
@@ -58,6 +60,7 @@ void* service_reqserv(void* argus)
 	rewind(fp);
 	send ( newsock, &filsize, sizeof(filsize), 0);
 	//send(newsock,)
+	fclose(fp);
 	char chunkidd[2];
 	char buffer[CHUNK_SIZE];
 	int n,chunkpos;
@@ -67,6 +70,8 @@ void* service_reqserv(void* argus)
 		fflush(stdout);
 		chunkpos= chunkidd[1] - '0';//---------------integr of chunk number
 		memset(chunkidd,0,2);
+		if(chunkpos==1)
+			continue;
 		fseek(fp,(chunkpos-1)*CHUNK_SIZE,SEEK_SET);
 		n=fread(buffer,sizeof(char),CHUNK_SIZE,fp);
 		send(newsock,buffer,n,0);
@@ -124,6 +129,11 @@ int main(int argc, char* argv[])
 	} 
 	
 	/*******************-----------------------------------SERVER--------------------------------****************/
+	vector<string> v;
+	v.push_back("C2");
+	v.push_back("C4");
+	v.push_back("C5");
+	chunklists.insert(make_pair("1.txt",v));
 
 	pthread_t tid2;
 	struct sockaddr_in serveraddrss;
@@ -150,7 +160,7 @@ int main(int argc, char* argv[])
 	memset(&serveraddrss, '\0', sizeof(serveraddrss));
 	serveraddrss.sin_family = AF_INET; 
 	serveraddrss.sin_addr.s_addr = inet_addr("127.0.0.1");
-	serveraddrss.sin_port = htons( 3058 );
+	serveraddrss.sin_port = htons( 6789 );
 	int retu = bind(socketfd,(struct sockaddr*) &serveraddrss, sizeof(serveraddrss)); 
     if(retu < 0)
     {

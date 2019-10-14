@@ -41,7 +41,7 @@ return v;
 }
 void* service_reqserv(void* argus)
 {
-	char str[27]="127.0.0.1:3058=C2,C4,C6";
+	char str[27]="127.0.0.1:3058=C1,C2,C4,C6";
 	int filsize;
 	//char strn[50];
 	//strcpy(strn,str);

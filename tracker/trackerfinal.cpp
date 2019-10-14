@@ -357,7 +357,7 @@ int main(int argc, char* argv[])
 	memset(&serveraddrss, '\0', sizeof(serveraddrss));
 	serveraddrss.sin_family = AF_INET; 
     serveraddrss.sin_addr.s_addr = inet_addr(trackerip1); 
-    cout<<trackerip1<<"\n";
+    cout<<"IP of tracker :"<<trackerip1<<"\n";
     unsigned short number = (unsigned short) strtoul(trackerport1, NULL, 0);
     //cout<<trackerport1<<"val of port1\n";
     //cout<<number<<"in tracker connecting to this port\n";

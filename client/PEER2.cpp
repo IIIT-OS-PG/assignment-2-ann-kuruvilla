@@ -59,7 +59,7 @@ return v;
 }
 void* service_reqserv(void* argus)
 {
-	char str[50]= "127.0.0.1:3058=C2,C4,C5";
+	char str[50]= "127.0.0.1:2306=C1,C2,C3,C6,C7";
 	int newsock=*((int *)argus);
 	send(newsock,str,strlen(str),0);
 	int filsize;
@@ -117,7 +117,7 @@ void* write_chunks(void* arggs)
     cout<<"Client received ";
     recv(clientsoc,chunkstring,BUFF_SIZE,0);//the chunk info is received
     //recv(clientsoc,&filesize,sizeof(filesize),0);
-    cout<<"IP port and chunk info from peer\n";
+    cout<<"IP port and chunk info from tracker\n";
     //cout<<chunkstring<<endl;
     //cout<<filesize<<endl;
     fflush(stdout);
@@ -383,18 +383,17 @@ void* service_reqclient(void* args)
 				   pe=splitbydelimeter(peerlist,';');
 				   memset(peerlists,0,sizeof(peerlists));
 				   number_of_peers=pe.size();
-				   cout<<number_of_peers<<"->No of perrs hvng this file"<<endl;
+				   cout<<number_of_peers<<"no of perrs hvng";
 				   filesize=0;
 				   send(clientsock,emptybuff2,sizeof(emptybuff2),0);
 				   recv(clientsock,&filesize,sizeof(filesize),0);//-----------------------------filesize from tracker
-				   cout<<filesize<<"Filesize receivd from tracker\n";
+				   cout<<filesize<<"filesize recevd from tracker\n";
 				    fpt=fopen("4.txt","wb");
 				     if(fpt==NULL)
 				     {
 				     	cout<<"Error opening file\n";
 				     }
 				  	 X=filesize-1;
-				  	//fpt=fopen("4.txt","wb"); 
 				  	fseek(fpt, X , SEEK_SET);
 				    fputc('\0', fpt);
 				    fclose(fpt);
@@ -407,10 +406,10 @@ void* service_reqclient(void* args)
 					}
 				   pe.clear();
 				   rs.clear();
-				   cout<<"Downloading----------------------------------\n";
 				   break;
+			
 			// default:
-			// 		break;			   
+			// 		break;	   
 
 		}
 		cout<<"Enter option and command\n";
