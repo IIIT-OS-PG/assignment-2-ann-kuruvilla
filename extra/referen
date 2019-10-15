@@ -1,0 +1,27 @@
+P1,P2,P3.cpp files
+PEER.cpp file
+trackerfinal.cpp
+trcker_info.txt
+sha1_impl.cpp
+
+mon-14 oct
+------------------------------design parameters--------------
+
+PEER.cpp
+PEER1.cpp
+PEER2.cpp
+trackerfinal.cpp
+trcker_info.txt
+g++ trackerfinal.cpp -lpthread -lssl -lcrypto
+./a.out tracker_info.txt
+g++ PEER2.cpp -lpthread -lssl -lcrypto
+./a.out 127.0.0.1 2306 tracker_info.txt
+g++ PEER1.cpp -lpthread -lssl -lcrypto
+./a.out 127.0.0.1 5835 tracker_info.txt
+g++ PEER.cpp -lpthread -lssl -lcrypto
+./a.out 127.0.0.1 3289 tracker_info.txt
+
+when user frst created user s login flg set to 0 so next explicitly call user login to login the user,thn only login flg set to1
+
+refer case number of command properly
+

@@ -27,19 +27,19 @@ char arg4[200];
 
 
 
-struct peer_info//-------------------------for mantaining info of each of peers
+struct peer_info
 {
 	char ip[9];
 	int peer_port;
 	char username[str_size];
 	char password[str_size];
-	int login_flg;//----------------------set this when the user/peer logs in
+	int login_flg;//----------------------set this when the user logs in
 };
 
 struct group_info{
 
 	 string group_id;
-	 char owner_port[5];
+	 int owner_port;
 	 int no_of_peers;
 };
 
@@ -86,13 +86,11 @@ vector<string> splitbydelimeter(string s,char deli)
 return v;	
 }
 
-
-
 vector<struct file_info> filelists;//----------list of files and info regarding file like siz hash
 unordered_map< string,int > filesizehash;//--------map of filename and file size
 vector<struct peer_info> userlists;//-----------list of all peers online
 vector<struct group_info> grouplist;//-----------------list of all the groups in the network
-unordered_map<string, vector<string> > peers_in_group;//---------list of all peers in a group,map between group id and peers in group
+unordered_map<string, vector<string> > peers_in_group;//---------list of all peers in agroup
 unordered_map<string, vector<string> > group_files;//----------list of all sharable files in a group
 unordered_map< string,vector<string > > peer_lists;//-------------------filename and appended string of (appended)port numbers of peers
 
@@ -104,12 +102,9 @@ void* service_req(void	*arg)
 	char portno[5];
 	int filesize;
 	string st;
-	vector<string> rr;
-	string groupname;
 	char filehash[2500];
 	char peerlist[200];
 	char emptybuffr[10];
-	string stt="";
 	strcpy(emptybuffr,"godislove");
 	while(1)
 	{
@@ -118,24 +113,15 @@ void* service_req(void	*arg)
 			rs=splitbydelimeter(req_client,';');
 			send(newsock,emptybuffr,strlen(emptybuffr),0);
 			memset(req_client,0,sizeof(req_client));
-			fflush(stdout);
 		if(rs[0]=="create_user")
 		{	
 			
 			struct peer_info pnew;
 			strcpy(usernme,rs[1].c_str());
 			strcpy(paswd,rs[2].c_str());
-			//cout<<"paswd :"<<paswd<<endl;
-			fflush(stdout);
+			cout<<"paswd :"<<paswd<<endl;
 			strcpy(pnew.username,usernme);
 			strcpy(pnew.password,paswd);
-			fflush(stdout);
-			recv(newsock,portno,5,0);
-			cout<<"Port Number :"<<portno<<endl;
-			//strcpy(pnew.port,portno);
-			send(newsock,emptybuffr,strlen(emptybuffr),0);
-			
-			pnew.login_flg=0;
 			userlists.push_back(pnew);
 			rs.clear();
 		}
@@ -148,71 +134,18 @@ void* service_req(void	*arg)
 				nod.login_flg=1;
 			}
 			else
-				cout<<"Wrong password--Login Failed\n";
-			fflush(stdout);
+				cout<<"Wrong password\n";
 			rs.clear();
 		}
 		if(rs[0]=="create_group")
 		{
 			struct group_info nod;
-			fflush(stdout);
 			nod.group_id=rs[1];
 			nod.no_of_peers=1;
-			recv(newsock,portno,5,0);//--------------make this portno owner of the group
-			cout<<"Owner of group : "<<portno<<endl;
-			fflush(stdout);
-			strcpy(nod.owner_port,portno);
+			//recv(portno)--------------make this portno owner of the group
 			grouplist.push_back(nod);
-			cout<<"\n-------Group created-----------------\n";
-			fflush(stdout);
-			send(newsock,emptybuffr,strlen(emptybuffr),0);
+			cout<<"Group created\n";
 			rs.clear();
-		}
-		if(rs[0]=="join_group")//-----------------add a peer to group
-		{
-			recv(newsock,portno,5,0);
-			stt=portno;
-			groupname=rs[1];
-			// if(find(grouplist.begin(),grouplist.end(),groupname) == grouplist.end())
-			// {
-			// 	cout<<"Group not in network\n";
-			// }
-			// else if(peers_in_group.find(groupname)==peers_in_group.end())
-			// {
-				
-			// }
-			// else
-			if(peers_in_group.find(groupname)!= peers_in_group.end())
-			 peers_in_group[groupname].push_back(stt);
-			fflush(stdout);
-			send(newsock,emptybuffr,strlen(emptybuffr),0);
-			stt="";
-			rs.clear();
-		}
-
-		if(rs[0]=="leave_group")
-		{
-			recv(newsock,portno,5,0);
-			stt=portno;
-			groupname=rs[1];
-			if(peers_in_group.find(groupname)==peers_in_group.end())
-			{
-				cout<<"Group does not exist\n";
-			}
-			else
-			{
-				rr=peers_in_group[groupname];
-				auto it=find(rr.begin(),rr.end(),stt);
-				if(it!=rr.end())
-					rr.erase(it);
-				peers_in_group[groupname]=rr;
-			}
-			rr.clear();
-			fflush(stdout);
-			send(newsock,emptybuffr,strlen(emptybuffr),0);
-			stt="";
-			rs.clear();
-
 		}
 		if(rs[0]=="upload_file")
 		{
@@ -222,17 +155,18 @@ void* service_req(void	*arg)
 			fflush(stdout);
 			 string s="";
 			 s=portno;	
-			cout<<"Port Number of client who is uploading: ";
+			cout<<"Port Number of client who is uploading:";
 			fflush(stdout);
-			cout<<portno<<endl;
+			cout<<portno;
 			fflush(stdout);
 			send(newsock,emptybuffr,strlen(emptybuffr),0);
 			recv(newsock,&filesize,sizeof(filesize),0);
 			fflush(stdout);
-			cout<<"Size of file : "<<filesize<<endl;
+			cout<<"size of file"<<filesize<<endl;
 			nod.filesize=filesize;
 			send(newsock,emptybuffr,strlen(emptybuffr),0);
 			fflush(stdout);
+			//recv(newsock,&filesize,sizeof(int),0);
 			//fflush(stdout);
 			//cout<<endl;
 			fflush(stdout);
@@ -268,14 +202,14 @@ void* service_req(void	*arg)
 			fflush(stdout);
 			filesize=0;
 			recv(newsock,filehash,2500,0);
-			cout<<"Filehash recalculated at tracker : "<<filehash<<endl;
+			cout<<"Filehash received : "<<filehash<<endl;
 			nod.sha1=filehash;
 			filelists.push_back(nod);
 			memset(filehash,0,sizeof(filehash));
 			memset(portno,0,sizeof(portno));
 			send(newsock,emptybuffr,strlen(emptybuffr),0);
 			//cout//<<nod.sha1<<endl;
-			cout<<"\n\n----------------File Upload success -------------------------\n\n";
+			cout<<"File Uploaded\n";
 			s="";
 			rs.clear();
 
@@ -289,25 +223,25 @@ void* service_req(void	*arg)
 			rs.clear();
 		}
 
-		// if(rs[0]=="join_group")
-		// {
-		// 	cout<<"Joining request accepted by Group Owner"<<endl;
-		// 	recv(newsock,portno,10,0);
-		// 	//cout<<portno<<endl;
-		// 	string s1(portno);
-		// 	if(peers_in_group.find(rs[1])==peers_in_group.end())
-		// 	{
-		// 		vector<string> v;
-		// 		v.push_back(s1);
-		// 		peers_in_group.insert(make_pair(rs[1],v));
-		// 	}
-		// 	peers_in_group[rs[1]].push_back(s1);//---when a peer joins a group share all its files in this group
-		// 	memset(portno,0,sizeof(portno));
-		// 	rs.clear();
-		// }
+		if(rs[0]=="join_group")
+		{
+			cout<<"Joining request accepted by Group Owner"<<endl;
+			recv(newsock,portno,10,0);
+			//cout<<portno<<endl;
+			string s1(portno);
+			if(peers_in_group.find(rs[1])==peers_in_group.end())
+			{
+				vector<string> v;
+				v.push_back(s1);
+				peers_in_group.insert(make_pair(rs[1],v));
+			}
+			peers_in_group[rs[1]].push_back(s1);//---when a peer joins a group share all its files in this group
+			memset(portno,0,sizeof(portno));
+			rs.clear();
+		}
 		if(rs[0]=="download_file")
 		{
-			//send(newsock,emptybuffr,strlen(emptybuffr),0);
+			send(newsock,emptybuffr,strlen(emptybuffr),0);
 			recv(newsock,portno,10,0);//---------------------port no of client sending request fr downloading a file
 			string s2=portno;
 			cout<<"Client with port number : "<<portno<<" requesting file for download\n";
@@ -423,13 +357,12 @@ int main(int argc, char* argv[])
 	memset(&serveraddrss, '\0', sizeof(serveraddrss));
 	serveraddrss.sin_family = AF_INET; 
     serveraddrss.sin_addr.s_addr = inet_addr(trackerip1); 
-    cout<<"Connected to tracker with IP and port as: "<<endl;
     cout<<"IP of tracker :"<<trackerip1<<"\n";
     unsigned short number = (unsigned short) strtoul(trackerport1, NULL, 0);
     //cout<<trackerport1<<"val of port1\n";
     //cout<<number<<"in tracker connecting to this port\n";
     serveraddrss.sin_port = htons( number );
-    cout<<"Port of tracker: "<<number<<endl;
+    cout<<"Port number of tracker: "<<number<<endl;
     int retu = bind(socketfd,(struct sockaddr*) &serveraddrss, sizeof(serveraddrss)); 
     if(retu < 0)
     {

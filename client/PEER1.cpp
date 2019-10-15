@@ -114,10 +114,10 @@ void* write_chunks(void* arggs)
     	exit(1);
     }
 
-    cout<<"Client received ";
+    //cout<<"Client received ";
     recv(clientsoc,chunkstring,BUFF_SIZE,0);//the chunk info is received
     //recv(clientsoc,&filesize,sizeof(filesize),0);
-    cout<<"IP port and chunk info from tracker\n";
+    cout<<"Chunk info received from peer\n";
     //cout<<chunkstring<<endl;
     //cout<<filesize<<endl;
     fflush(stdout);
@@ -249,7 +249,7 @@ string filehash(char filenm[100])
 		}
 	}
 	fflush(stdin);
-	cout<<endl<<str<<"hash of totl file"<<endl;
+	cout<<endl<<str<<" Hash of totl file"<<endl;
 	fflush(stdout);
 	fclose(f);
 return str;	
@@ -304,25 +304,49 @@ void* service_reqclient(void* args)
 	cout<<"Enter option and command separated by ; \n";
 	cin>>option;
 	cin>>command;//----------------------create_user username passwd----------
-	// while(1)
-	// {
+	while(1)
+	{
 		switch(option)
 		{
 			case 1:send(clientsock,command,100,0);
 				   cout<<"Create User Account\n";
-
+				   fflush(stdout);
+				   recv(clientsock,emptybuff,10,0);
 				   memset(command,0,sizeof(command));
+				   memset(emptybuff,0,sizeof(emptybuff));
+				   cout<<"User Port Number: "<<port<<endl;
+				   fflush(stdout);
+				   send(clientsock,port,strlen(port),0);
+				   recv(clientsock,emptybuff,10,0);
 				   break;
 			case 2:send(clientsock,command,100,0);
 					cout<<"User Login\n";
+					fflush(stdout);
 					memset(command,0,sizeof(command));
 					break;
 			case 3:send(clientsock,command,100,0);
 					cout<<"Create Group\n";
+					fflush(stdout);
 					//send(clientsock,&portn,)
+					recv(clientsock,emptybuff,10,0);
+					memset(emptybuff,0,sizeof(emptybuff));
+					send(clientsock,port,strlen(port),0);
+					recv(clientsock,emptybuff,10,0);
 					memset(command,0,sizeof(command));
 					break;
-			case 4:send(clientsock,command,100,0);//-------------upload command----upload_file;1.txt;G1;6789
+			case 4:	send(clientsock,command,100,0);//------------------join_group;G1
+					recv(clientsock,emptybuff,100,0);
+					send(clientsock,port,strlen(port),0);
+					recv(clientsock,emptybuff,10,0);
+					memset(command,0,sizeof(command));
+					break;
+			case 5:send(clientsock,command,100,0);//---------------leave_group
+					recv(clientsock,emptybuff,100,0);
+					send(clientsock,port,strlen(port),0);
+					recv(clientsock,emptybuff,10,0);
+					memset(command,0,sizeof(command));
+					break;	
+			case 6:send(clientsock,command,100,0);//-------------upload command----upload_file;1.txt;G1;6789
 					cout<<"Uploading file\n";
 					cout<<port<<endl;
 					recv(clientsock,emptybuff,100,0);
@@ -363,18 +387,18 @@ void* service_reqclient(void* args)
 					fflush(stdout);
 					rs.clear();
 					break;
-			case 5: send(clientsock,command,100,0);
+			case 7: send(clientsock,command,100,0);
 					//cout<<"list_files";//------------------------list_file;G1
 					memset(command,0,sizeof(command));
 					rs.clear();
 					break;
-			case 6:send(clientsock,command,100,0);//-------------------join_group
+			case 8:send(clientsock,command,100,0);//-------------------join_group
 					send(clientsock,port,strlen(port),0);
 					
 					memset(command,0,sizeof(command));
 					rs.clear();
 					break;
-			case 7:send(clientsock,command,200,0);	//------------download_file			
+			case 9:send(clientsock,command,200,0);	//------------download_file			
 				   memset(command,0,sizeof(command));
 				   recv(clientsock,emptybuff,100,0);
 				   send(clientsock,port,strlen(port),0);
@@ -383,11 +407,11 @@ void* service_reqclient(void* args)
 				   pe=splitbydelimeter(peerlist,';');
 				   memset(peerlists,0,sizeof(peerlists));
 				   number_of_peers=pe.size();
-				   cout<<number_of_peers<<"no of perrs hvng";
+				   cout<<number_of_peers<<"->No of peers hvng this file\n";
 				   filesize=0;
 				   send(clientsock,emptybuff2,sizeof(emptybuff2),0);
 				   recv(clientsock,&filesize,sizeof(filesize),0);//-----------------------------filesize from tracker
-				   cout<<filesize<<"filesize recevd from tracker\n";
+				   cout<<filesize<<"-> Filesize received from tracker\n";
 				    fpt=fopen("4.txt","wb");
 				     if(fpt==NULL)
 				     {
@@ -397,26 +421,26 @@ void* service_reqclient(void* args)
 				  	fseek(fpt, X , SEEK_SET);
 				    fputc('\0', fpt);
 				    fclose(fpt);
-				   for(i=0;i<number_of_peers;i++)
-					{
-						peer[i]=stoi(pe[i]);
-						//cout<<peer<<"peerport";
-						pthread_create(&tidc[i],NULL,write_chunks,(void*)&peer[i]);
+					   for(i=0;i<number_of_peers;i++)
+						{
+							peer[i]=stoi(pe[i]);
+							//cout<<peer<<"peerport";
+							pthread_create(&tidc[i],NULL,write_chunks,(void*)&peer[i]);
 
-					}
+						}
 				   pe.clear();
 				   rs.clear();
 				   break;
 			
-			// default:
-			// 		break;	   
+			   
 
 		}
 		cout<<"Enter option and command\n";
+		fflush(stdin);
 		cin>>option;
 		cin>>command;
 		fflush(stdout); 
-	// }
+	 }
 	
 
 	//char peer_info[200]="127.0.0.1:3058,127.0.0.1:3625";
