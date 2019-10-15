@@ -95,7 +95,8 @@ void* write_chunks(void* arggs)
 	int i;
 	vector<int> chunksreceived(10);
 	int port=*((int *)arggs);
-	cout<<port<<"port no\n";
+	//cout<<port<<"port no\n";
+	fflush(stdout);
 	int clientsoc = socket(PF_INET,SOCK_STREAM, 0);
 	if(clientsoc  < 0)
 	{
@@ -170,7 +171,7 @@ void* write_chunks(void* arggs)
     }
     parts2.push_back(st);
     
-    cout<<"\n\nDownloading Chunks.................................\n\n";
+    cout<<"\n\nDownloading chunks from Peer with IP and port no as 127.0.0.1 : "<< port<<".................................\n\n";
     //cout<<parts2[0]<<parts2[1]<<parts2[2];
     fflush(stdin);
     fflush(stdout);
@@ -186,6 +187,7 @@ void* write_chunks(void* arggs)
   		if(chunksreceived[chunkposc]==0)
   		{
   		  cout<<"Client asking for chunk no: "<<chunkid<<endl;
+  		  fflush(stdout);
   		  send(clientsoc,chunkid,2,0);//--------------------asking for this chunk from peer
   		}
   		else
@@ -256,7 +258,7 @@ string filehash(char filenm[100])
 		}
 	}
 	fflush(stdin);
-	cout<<endl<<str<<"Hash of totl file"<<endl;
+	cout<<endl<<str<<"Hash of totl file: "<<endl;
 	fflush(stdout);
 	fclose(f);
 return str;	
@@ -312,8 +314,8 @@ void* service_reqclient(void* args)
 	cin>>option;
 	cin>>command;//----------------------create_user username passwd----------
 	fflush(stdin);
-	// while(1)
-	// {
+	while(1)
+	{
 		switch(option)
 		{
 			case 1:send(clientsock,command,100,0);
@@ -338,6 +340,18 @@ void* service_reqclient(void* args)
 					//send(clientsock,&portn,)
 					memset(command,0,sizeof(command));
 					break;
+			case 4:send(clientsock,command,100,0);//------------------join_group;G1
+					recv(clientsock,emptybuff,100,0);
+					send(clientsock,port,strlen(port),0);
+					recv(clientsock,emptybuff,10,0);
+					memset(command,0,sizeof(command));
+					break;
+			case 5:send(clientsock,command,100,0);//---------------leave_group
+					recv(clientsock,emptybuff,100,0);
+					send(clientsock,port,strlen(port),0);
+					recv(clientsock,emptybuff,10,0);
+					memset(command,0,sizeof(command));
+					break;				
 			case 6:send(clientsock,command,100,0);//-------------upload command----upload_file;1.txt;G1;6789
 					cout<<"Uploading file\n";
 					cout<<port<<endl;
@@ -421,7 +435,8 @@ void* service_reqclient(void* args)
 						pthread_create(&tidc[i],NULL,write_chunks,(void*)&peer[i]);
 
 					}
-
+					for(i=0;i<number_of_peers;i++)
+						pthread_join(tidc[i],NULL);
 				   pe.clear();
 				   rs.clear();
 				   cout<<"Downloading----------------------------------\n";
@@ -431,14 +446,14 @@ void* service_reqclient(void* args)
 
 		}
 		fflush(stdout);
-		// cout<<"Enter option and command\n";
-		// fflush(stdout);
-		// fflush(stdin);
-		// cin>>option;
-		// cin>>command;
-		// fflush(stdout);
+		cout<<"Enter option and command\n";
+		fflush(stdout);
+		fflush(stdin);
+		cin>>option;
+		cin>>command;
+		fflush(stdout);
 		fflush(stdin); 
-	//}
+	}
 	
 
 	//char peer_info[200]="127.0.0.1:3058,127.0.0.1:3625";
